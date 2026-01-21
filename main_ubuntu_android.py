@@ -11,6 +11,42 @@ CUSTOM_NAME = "ajeossida"
 TEMP = 0
 
 
+def patch_frida_ports(frida_dir, new_control_port, new_cluster_port):
+    """
+    Patch the default Frida RPC ports in the frida-core source.
+    frida_dir: root of the frida source (e.g. path/to/frida/frida-core)
+    new_control_port: custom default control port (int)
+    new_cluster_port: custom default cluster port (int)
+    """
+
+    # Locate socket.vala
+    target_file = os.path.join(frida_dir, "lib/base/socket.vala")
+    if not os.path.isfile(target_file):
+        print(f"[-] Could not find: {target_file}")
+        return False
+
+    # Read source
+    with open(target_file, "r", encoding="utf-8") as f:
+        source = f.read()
+
+    # Replace default port values
+    patched_source = re.sub(
+        r"DEFAULT_CONTROL_PORT\s*=\s*\d+;",
+        f"DEFAULT_CONTROL_PORT = {new_control_port};", source
+    )
+    patched_source = re.sub(
+        r"DEFAULT_CLUSTER_PORT\s*=\s*\d+;",
+        f"DEFAULT_CLUSTER_PORT = {new_cluster_port};", patched_source
+    )
+
+    # Write back
+    with open(target_file, "w", encoding="utf-8") as f:
+        f.write(patched_source)
+
+    print(f"[+] Patched ports in {target_file} → control {new_control_port}, cluster {new_cluster_port}")
+    return True
+
+
 def run_command(command, cwd=None):
     try:
         result = subprocess.run(command, shell=True, cwd=cwd, check=True, text=True)
@@ -144,6 +180,9 @@ def main():
 
     git_clone_repo()
 
+    frida_core_dir = os.path.join(custom_dir, "subprojects/frida-core")
+    patch_frida_ports(frida_core_dir, 27043, 27053)
+    
     ndk_path = os.path.join(os.getcwd(), download_ndk())
 
     architectures = ["android-arm64", "android-arm", "android-x86_64", "android-x86"]

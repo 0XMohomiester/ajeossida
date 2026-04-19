@@ -62,7 +62,7 @@ def git_clone_repo():
     destination_dir = os.path.join(os.getcwd(), CUSTOM_NAME)
 
     print(f"\n[*] Cloning repository {repo_url} to {destination_dir}...")
-    run_command(f"git clone --branch 17.8.0 --depth 1 --recurse-submodules {repo_url} {destination_dir}")
+    run_command(f"git clone --branch 16.6.1 --depth 1 --recurse-submodules {repo_url} {destination_dir}")
 
 
 def download_ndk():
@@ -182,7 +182,7 @@ def main():
     git_clone_repo()
 
     frida_core_dir = os.path.join(custom_dir, "subprojects/frida-core")
-    patch_frida_ports(frida_core_dir, 27043, 27053)
+    patch_frida_ports(frida_core_dir, 8888, 8888)
     
     ndk_path = os.path.join(os.getcwd(), download_ndk())
 
